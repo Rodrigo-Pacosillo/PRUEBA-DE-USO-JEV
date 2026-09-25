@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "Sugerencia" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "nombre" TEXT NOT NULL,
+    "tipo" TEXT NOT NULL,
+    "mensaje" TEXT NOT NULL,
+    "fecha" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

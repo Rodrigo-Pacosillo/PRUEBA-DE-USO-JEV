@@ -42,6 +42,12 @@ next-env.d.ts
 
 /app/generated/prisma
 
+# skills de agentes (generados por herramientas)
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
 # base de datos local (sqlite)
 *.db
 *.db-journal

@@ -1,0 +1,84 @@
+Guía rápida de Jev
+¿Qué es?
+
+Jev es un modelo de decisión de TypeSafe AI (no genera texto). Recibe un state (tu texto) y devuelve respuestas tipadas con probabilidades, ideal para clasificar, enrutar o puntuar.
+Acceso
+
+Vía OpenRouter: crea una API key en openrouter.ai/settings/keys y usa el modelo typesafe/jev-1.13.
+bash
+
+export OPENROUTER_API_KEY="sk-or-..."
+
+Las 3 preguntas
+Tipo	Responde	Devuelve
+choice	¿Cuál opción?	Opción + probabilidad por cada una
+noul	¿Es cierto?	Probabilidad de "sí" (0-1)
+score	¿Dónde en una escala?	Valor ponderado + probabilidad por nivel
+Ejemplo mínimo (curl)
+bash
+
+curl https://openrouter.ai/api/alpha/decisions \
+  -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "typesafe/jev-1.13",
+    "state": "No puedo acceder a mi cuenta.",
+    "questions": {
+      "equipo": {
+        "type": "choice",
+        "instructions": "¿A qué equipo dirigir?",
+        "criteria": {
+          "soporte": "Problemas técnicos o de acceso",
+          "facturacion": "Pagos, facturas, reembolsos"
+        }
+      },
+      "urgente": {
+        "type": "noul",
+        "instructions": "¿Requiere atención humana?"
+      }
+    }
+  }'
+
+Ejemplo en Next.js + TypeScript
+typescript
+
+import { experimental_evaluate as evaluate } from 'ai';
+
+const result = await evaluate({
+  model: 'typesafe-ai/jev',
+  state: textoDeLaSugerencia,
+  questions: {
+    equipo: {
+      type: 'choice',
+      instructions: 'Selecciona el equipo responsable.',
+      criteria: {
+        producto: 'Sugerencias sobre funcionalidades',
+        soporte: 'Problemas técnicos o de acceso',
+        facturacion: 'Preguntas sobre facturas o cargos',
+      },
+    },
+    urgencia: {
+      type: 'score',
+      instructions: '¿Cuál es la urgencia?',
+      criteria: ['Puede esperar', 'Debería responderse pronto', 'Necesita respuesta hoy'],
+    },
+    revision_humana: {
+      type: 'noul',
+      instructions: '¿Requiere revisión humana?',
+    },
+  },
+});
+
+console.log(result.answers.equipo.choice);       // "soporte"
+console.log(result.answers.urgencia.score);      // 1.8
+console.log(result.answers.revision_humana.noul); // 0.3
+
+Mejores prácticas
+
+    Escribe criteria como si explicaras a alguien nuevo: Jev las lee para decidir.
+
+    Usa umbrales de confianza: si confianza < 0.8, envía a revisión manual en lugar de automatizar.
+
+    Ten un fallback: si la llamada falla, guarda el dato en cola de revisión. Nunca lo pierdas.
+
+    Límites: state máximo 32k tokens; input $0.042/millón de tokens, output gratis.

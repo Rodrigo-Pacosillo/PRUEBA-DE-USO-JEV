@@ -107,6 +107,45 @@ Con la base lista, lo que sigue es la construcción de la aplicación en sí:
    datos y pinta los registros en pantalla. Para que una página lea datos
    recién insertados, la ruta correspondiente se marca para revalidarse al
    momento del insert.
+6. **El ciclo de clasificación automática**: una sugerencia guardada puede
+   pasar por un modelo de decisión externo que no escribe texto sino que elige
+   entre valores que el propio proyecto ya definió. La idea central es que la
+   clasificación no reemplaza la decisión: el modelo aporta una distribución de
+   probabilidades y es la aplicación la que decide qué hacer con ella según un
+   umbral propio. El orden importa, y es el inverso al intuitivo: primero se
+   escribe en la base, después se consulta al modelo, y recién entonces se
+   redirige. Así, si el modelo falla, se pierde la clasificación pero nunca el
+   dato que la persona envió. La fila queda marcada como pendiente de revisión
+   para que una persona la retome.
+7. **Qué pregunta al modelo y qué no**: conviene separar dos cosas que se
+   confunden. Una es *qué es* el texto (una queja, una propuesta, un comentario
+   o nada aprovechable) y otra es *cuánto vale* leerlo. Juntarlas en un solo
+   número obliga a elegir entre las dos preguntas, así que se preguntan por
+   separado. En cambio, hay comparaciones que no son lenguaje sino aritmética
+   (por ejemplo, si la categoría detectada es la misma que la que alguien ticked
+   en un desplegable): esas van en el código, sin gastar una consulta. Por el
+   mismo motivo, el valor elegido por la persona **no** se le envía al modelo
+   como parte de la entrada: se le sugeriría la respuesta.
+8. **Reglas duras antes del modelo**: hay descartes que se pueden decidir de
+   forma exacta y gratis — el texto no tiene suficientes letras distintas como
+   para decir algo. Resolver eso en el código evita gastar una consulta por fila
+   descartable. El límite de este tipo de regla es importante: solo alcanza para
+   el ruido mecánico, y juzgar lo que significa le corresponde al modelo.
+9. **Política en el código, no en el prompt**: los umbrales viven en el
+   proyecto, no en la definición de las preguntas. Así se pueden recalibrar
+   reejecutando la decisión sobre la distribución ya guardada, sin volver a
+   llamar al modelo, y la respuesta cruda queda guardada como evidencia de por
+   qué se tomó la decisión.
+10. **Ruido oculto y revisión explícita**: las filas que el modelo descartó
+    siguen en la base (nunca se borra lo que envió una persona) pero se ocultan
+    de la lista, con un interruptor para verlas. La lista se ordena poniendo
+    primero lo que necesita una persona, después lo más valioso. Esto convierte
+    el modelo en un filtro que ordena el trabajo, no en un juez que descarta.
+11. **Recuperar lo que quedó sin clasificar**: si el modelo no estuvo
+    disponible, o si se agregaron preguntas después, quedan filas sin analizar.
+    Un botón que las procesa por lotes es la salida: debe llevar un tope por lote
+    (una acción de servidor tiene tiempo máximo de ejecución) y concurrencia
+    limitada (para no exceder el límite de peticiones del proveedor).
 
 ---
 

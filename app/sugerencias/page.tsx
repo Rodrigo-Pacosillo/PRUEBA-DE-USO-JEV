@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
+import { TIPOS } from "@/lib/validations/sugerencia";
 import { crearSugerencia, type SugerenciaFormState } from "./actions";
 
-const initialState: SugerenciaFormState = { success: false, error: "" };
+const initialState: SugerenciaFormState = { success: false, errors: {} };
 
 export default function SugerenciasPage() {
   const [state, formAction, pending] = useActionState(
@@ -11,8 +12,11 @@ export default function SugerenciasPage() {
     initialState
   );
 
+  const errores = state.success ? {} : state.errors;
+
   const inputClass =
     "mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-900";
+  const errorClass = "mt-1 text-sm text-red-600";
 
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-12">
@@ -27,15 +31,23 @@ export default function SugerenciasPage() {
         <label className="text-sm font-medium">
           Nombre
           <input name="nombre" placeholder="Tu nombre" className={inputClass} />
+          {errores.nombre?.[0] ? (
+            <span className={errorClass}>{errores.nombre[0]}</span>
+          ) : null}
         </label>
 
         <label className="text-sm font-medium">
           Tipo
           <select name="tipo" defaultValue="sugerencia" className={inputClass}>
-            <option value="queja">Queja</option>
-            <option value="comentario">Comentario</option>
-            <option value="sugerencia">Sugerencia</option>
+            {TIPOS.map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo[0].toUpperCase() + tipo.slice(1)}
+              </option>
+            ))}
           </select>
+          {errores.tipo?.[0] ? (
+            <span className={errorClass}>{errores.tipo[0]}</span>
+          ) : null}
         </label>
 
         <label className="text-sm font-medium">
@@ -46,9 +58,12 @@ export default function SugerenciasPage() {
             placeholder="Escribí acá..."
             className={inputClass}
           />
+          {errores.mensaje?.[0] ? (
+            <span className={errorClass}>{errores.mensaje[0]}</span>
+          ) : null}
         </label>
 
-        {state.success === false && state.error ? (
+        {!state.success && state.error ? (
           <p className="text-sm text-red-600">{state.error}</p>
         ) : null}
 

@@ -13,11 +13,24 @@ datasource db {
 }
 
 model Sugerencia {
-  id      Int       @id @default(autoincrement())
+  id      Int      @id @default(autoincrement())
   nombre  String
   tipo    String
   mensaje String
-  fecha   DateTime  @default(now())
+  fecha   DateTime @default(now())
+
+  // Clasificacion automatica con Jev. Todos opcionales: la sugerencia se
+  // guarda aunque el analisis falle o no se haya ejecutado.
+  categoria         String?
+  utilidad          Float?
+  coincideTipo      Boolean?
+  destacado         Boolean   @default(false)
+  requiereRevision  Boolean?
+  confianza         Float?
+  estadoAnalisis    String   @default("pendiente")
+  jevRequestId      String?
+  jevCosto          Float?
+  jevCrudo          String?
 }
 
 
